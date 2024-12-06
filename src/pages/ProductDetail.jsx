@@ -10,6 +10,7 @@ import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import Reviews from "../components/product/Reviews";
 import RelatedProducts from "../components/product/RelatedProducts";
+import { products } from "../data/products"; // Import products data
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -18,36 +19,16 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
 
-  // Mock product data (replace with API call)
-  const product = {
-    id,
-    name: "Premium Wireless Headphones",
-    price: 199.99,
-    rating: 4.5,
-    reviews: 128,
-    stock: 10,
-    description:
-      "Experience premium sound quality with our wireless headphones. Features include active noise cancellation, 30-hour battery life, and premium comfort.",
-    images: [
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-      "https://images.unsplash.com/photo-1583394838336-acd977736f90",
-      "https://images.unsplash.com/photo-1487215078519-e21cc028cb29",
-    ],
-    features: [
-      "Active Noise Cancellation",
-      "30-hour Battery Life",
-      "Premium Comfort",
-      "Quick Charge",
-      "Voice Assistant Support",
-    ],
-    specifications: {
-      "Battery Life": "30 hours",
-      "Charging Time": "2 hours",
-      "Bluetooth Version": "5.0",
-      "Driver Size": "40mm",
-      Weight: "250g",
-    },
-  };
+  // Find the product from our products data
+  const product = products.find((p) => p.id === parseInt(id));
+
+  if (!product) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-center text-gray-600">Product not found</p>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
@@ -65,32 +46,34 @@ const ProductDetail = () => {
             className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden bg-gray-100"
           >
             <img
-              src={product.images[selectedImage]}
+              src={product.images?.[selectedImage] || product.image}
               alt={product.name}
               className="w-full h-full object-cover"
             />
           </motion.div>
-          <div className="grid grid-cols-4 gap-4">
-            {product.images.map((image, index) => (
-              <motion.button
-                key={index}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setSelectedImage(index)}
-                className={`aspect-w-1 aspect-h-1 rounded-lg overflow-hidden ${
-                  selectedImage === index
-                    ? "ring-2 ring-primary"
-                    : "ring-1 ring-gray-200"
-                }`}
-              >
-                <img
-                  src={image}
-                  alt={`Product ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </motion.button>
-            ))}
-          </div>
+          {product.images && (
+            <div className="grid grid-cols-4 gap-4">
+              {product.images.map((image, index) => (
+                <motion.button
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedImage(index)}
+                  className={`aspect-w-1 aspect-h-1 rounded-lg overflow-hidden ${
+                    selectedImage === index
+                      ? "ring-2 ring-primary"
+                      : "ring-1 ring-gray-200"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`Product ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </motion.button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
@@ -121,7 +104,7 @@ const ProductDetail = () => {
               ${product.price}
             </span>
             <span className="text-green-600">
-              {product.stock > 0 ? "In Stock" : "Out of Stock"}
+              {product.stock > 0 ? `${product.stock} in stock` : "Out of Stock"}
             </span>
           </div>
 
@@ -130,14 +113,16 @@ const ProductDetail = () => {
             <p className="text-gray-600">{product.description}</p>
           </div>
 
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Key Features</h2>
-            <ul className="list-disc list-inside space-y-1 text-gray-600">
-              {product.features.map((feature, index) => (
-                <li key={index}>{feature}</li>
-              ))}
-            </ul>
-          </div>
+          {product.features && (
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Key Features</h2>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                {product.features.map((feature, index) => (
+                  <li key={index}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="border-t pt-6">
             <div className="flex items-center space-x-4">
@@ -171,18 +156,20 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Specifications */}
-          <div className="border-t pt-6">
-            <h2 className="text-lg font-semibold mb-4">Specifications</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between">
-                  <span className="text-gray-600">{key}</span>
-                  <span className="font-medium">{value}</span>
-                </div>
-              ))}
+          {/* Specifications - only show if they exist */}
+          {product.specifications && (
+            <div className="border-t pt-6">
+              <h2 className="text-lg font-semibold mb-4">Specifications</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(product.specifications).map(([key, value]) => (
+                  <div key={key} className="flex justify-between">
+                    <span className="text-gray-600">{key}</span>
+                    <span className="font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -208,7 +195,10 @@ const ProductDetail = () => {
         <Reviews productId={id} />
       </div>
 
-      <RelatedProducts currentProductId={id} category={product.category} />
+      <RelatedProducts
+        currentProductId={parseInt(id)}
+        category={product.category}
+      />
     </div>
   );
 };

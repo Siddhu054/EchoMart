@@ -2,7 +2,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XIcon } from "@heroicons/react/outline";
 
 const ProductFilters = ({ filters, setFilters, isMobile, isOpen, onClose }) => {
-  const categories = ["all", "Electronics", "Fashion", "Home & Living"];
+  const categories = [
+    { value: "all", label: "All Categories" },
+    { value: "electronics", label: "Electronics" },
+    { value: "fashion", label: "Fashion" },
+    { value: "home", label: "Home & Living" },
+    { value: "sports", label: "Sports" },
+    { value: "stationery", label: "Stationery" },
+  ];
   const priceRanges = [
     { label: "All", value: "all" },
     { label: "Under $100", value: "0-100" },
@@ -17,21 +24,19 @@ const ProductFilters = ({ filters, setFilters, isMobile, isOpen, onClose }) => {
       <div>
         <h3 className="text-lg font-semibold mb-4">Category</h3>
         <div className="space-y-2">
-          {categories.map((category) => (
-            <label key={category} className="flex items-center">
+          {categories.map(({ value, label }) => (
+            <label key={value} className="flex items-center">
               <input
                 type="radio"
                 name="category"
-                value={category}
-                checked={filters.category === category}
+                value={value}
+                checked={filters.category === value}
                 onChange={(e) =>
                   setFilters({ ...filters, category: e.target.value })
                 }
                 className="mr-2"
               />
-              <span className="capitalize">
-                {category === "all" ? "All Categories" : category}
-              </span>
+              <span className="capitalize">{label}</span>
             </label>
           ))}
         </div>

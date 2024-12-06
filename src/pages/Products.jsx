@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ProductCard from "../components/product/ProductCard";
 import ProductFilters from "../components/product/ProductFilters";
 import ProductSort from "../components/product/ProductSort";
 import { products, categories } from "../data/products";
+import { useSearchParams } from "react-router-dom";
 
 const Products = () => {
   const [filters, setFilters] = useState({
@@ -15,23 +16,57 @@ const Products = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [productList, setProductList] = useState(products);
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
+  useEffect(() => {
+    if (categoryParam) {
+      setFilters((prev) => ({
+        ...prev,
+        category: categoryParam.toLowerCase().replace(/[^a-z0-9]/g, ""),
+      }));
+      const filteredProducts = products.filter((product) => {
+        const normalizedProductCategory = product.category
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        const normalizedCategory = categoryParam
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        return normalizedProductCategory === normalizedCategory;
+      });
+      setProductList(filteredProducts);
+    }
+  }, [categoryParam]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
+    setFilters((prev) => ({
+      ...prev,
+      category: category,
+    }));
     if (category === "all") {
       setProductList(products);
     } else {
-      setProductList(
-        products.filter(
-          (product) => product.category.toLowerCase() === category.toLowerCase()
-        )
-      );
+      const filteredProducts = products.filter((product) => {
+        const normalizedProductCategory = product.category
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        const normalizedCategory = category
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        return normalizedProductCategory === normalizedCategory;
+      });
+      setProductList(filteredProducts);
     }
   };
 
   const filterProducts = (products) => {
     return products.filter((product) => {
-      if (filters.category !== "all" && product.category !== filters.category) {
+      if (
+        filters.category !== "all" &&
+        product.category.toLowerCase().replace(/[^a-z0-9]/g, "") !==
+          filters.category.toLowerCase().replace(/[^a-z0-9]/g, "")
+      ) {
         return false;
       }
       if (filters.priceRange !== "all") {
@@ -61,6 +96,15 @@ const Products = () => {
   };
 
   const displayProducts = sortProducts(filterProducts(productList));
+
+  useEffect(() => {
+    if (selectedCategory !== "all") {
+      setFilters((prev) => ({
+        ...prev,
+        category: selectedCategory,
+      }));
+    }
+  }, [selectedCategory]);
 
   return (
     <div className="container mx-auto px-4 py-8">
